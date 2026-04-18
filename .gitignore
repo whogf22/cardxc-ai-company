@@ -1,0 +1,14 @@
+node_modules/
+.env
+.env.local
+data/logs/
+data/memory/
+*.log
+npm-debug.log*
+.DS_Store
+.vscode/
+.idea/
+dist/
+build/
+ecosystem.config.cjs
+*.tar.gz

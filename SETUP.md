@@ -1,5 +1,36 @@
 # CardXC AI Company — Full Setup Guide (Bangla+English)
 
+---
+
+## ⚡ ONE-COMMAND SETUP (Recommended)
+
+SSH kor tor VPS e ebong **ei ek line run kor**:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/whogf22/cardxc-ai-company/main/scripts/vps-setup.sh | bash
+```
+
+**Eita nije nije sob kore:**
+- SSH keypair banay (`~/.ssh/cardxc_deploy`)
+- Public key `authorized_keys` e add kore
+- Node.js 20 + pm2 + git install kore
+- Repo clone kore `/var/www/cardxc-ai-company` e
+- pm2 te 2 process start kore (`cardxc-ai` + `cardxc-webhook`)
+- Firewall port 3001, 3002 open kore
+- Terminal e print kore: **VPS_HOST, VPS_USER, VPS_SSH_KEY, VPS_PORT**
+
+**Tarpor tor kaj sudhu 3 ta:**
+
+1. Printed values copy kore GitHub Secrets e paste kor: https://github.com/whogf22/cardxc-ai-company/settings/secrets/actions
+2. `.env` e API keys fill kor: `nano /var/www/cardxc-ai-company/.env`
+3. `pm2 restart all`
+
+Done. Next `git push` theke auto-deploy chalu.
+
+---
+
+## Manual Setup (if you want step-by-step control)
+
 Tor jonno step-by-step guide. Ei order e kor — skip korbi na.
 
 ---

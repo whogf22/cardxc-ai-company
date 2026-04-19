@@ -5,6 +5,33 @@
 **Repo:** https://github.com/whogf22/cardxc-ai-company (private)
 **Auto-deploy:** Push to `main` → GitHub Actions + VPS webhook → pm2 restart in ~15s
 
+---
+
+## 🚀 One-Command VPS Setup
+
+SSH into your VPS and run **this single line**:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/whogf22/cardxc-ai-company/main/scripts/vps-setup.sh | bash
+```
+
+The script does **everything**:
+- Installs Node.js 20, pm2, git
+- Generates an SSH deploy keypair (`~/.ssh/cardxc_deploy`)
+- Adds the public key to `authorized_keys` automatically
+- Clones the repo into `/var/www/cardxc-ai-company`
+- Starts the main app + webhook listener with pm2
+- Opens firewall ports 3001 (dashboard) and 3002 (webhook)
+- Auto-generates a `GITHUB_WEBHOOK_SECRET`
+- **Prints** `VPS_HOST`, `VPS_USER`, `VPS_PORT`, `VPS_SSH_KEY` ready to paste into GitHub Secrets
+- Saves the same values to `/var/www/cardxc-ai-company/.deploy-secrets.txt`
+
+After the script finishes:
+1. Copy the printed values into [GitHub Secrets](https://github.com/whogf22/cardxc-ai-company/settings/secrets/actions)
+2. Edit `.env`: `nano /var/www/cardxc-ai-company/.env` (fill API keys)
+3. `pm2 restart all`
+4. Next `git push` → auto-deploy triggers → Telegram notifies
+
 An always-on multi-agent system that codes, designs, markets, deploys, monitors competitors, and reports to you via Telegram. CEO-led, 7 specialist agents, 37-specialist visual workflow.
 
 ---

@@ -17,10 +17,32 @@ jobs:
         run: |
           if [ -n "${{ secrets.VPS_HOST }}" ] && [ -n "${{ secrets.VPS_SSH_KEY }}" ]; then
             echo "ready=true" >> $GITHUB_OUTPUT
+            echo "✓ VPS secrets present — will deploy"
           else
             echo "ready=false" >> $GITHUB_OUTPUT
-            echo "::notice::VPS secrets not configured — skipping SSH deploy"
+            echo "::warning::VPS secrets missing — run vps-setup.sh on your VPS"
+            echo ""
+            echo "⚠️  VPS_HOST or VPS_SSH_KEY not configured in GitHub Secrets."
+            echo ""
+            echo "One-command VPS setup (SSH into your VPS and run):"
+            echo "  curl -sSL https://raw.githubusercontent.com/whogf22/cardxc-ai-company/main/scripts/vps-setup.sh | bash"
+            echo ""
+            echo "Then add the printed VPS_HOST / VPS_USER / VPS_SSH_KEY / VPS_PORT to:"
+            echo "  https://github.com/whogf22/cardxc-ai-company/settings/secrets/actions"
           fi
+
+      - name: Notify — secrets missing
+        if: steps.check.outputs.ready == 'false'
+        continue-on-error: true
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TG_TOKEN" ] || [ -z "$TG_CHAT" ]; then exit 0; fi
+          curl -s "https://api.telegram.org/bot$TG_TOKEN/sendMessage" \
+            --data-urlencode "chat_id=$TG_CHAT" \
+            --data-urlencode "parse_mode=Markdown" \
+            --data-urlencode "text=⚠️ *VPS secrets missing* — deploy skipped.%0A%0ARun on your VPS:%0A\`\`\`%0Acurl -sSL https://raw.githubusercontent.com/whogf22/cardxc-ai-company/main/scripts/vps-setup.sh | bash%0A\`\`\`" || true
 
       - name: Deploy via SSH
         if: steps.check.outputs.ready == 'true'

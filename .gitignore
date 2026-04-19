@@ -12,3 +12,6 @@ dist/
 build/
 ecosystem.config.cjs
 *.tar.gz
+.deploy-secrets.txt
+*.secrets.txt
+*.pem

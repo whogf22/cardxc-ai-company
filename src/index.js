@@ -14,6 +14,7 @@ import { MarketingAgent } from './agents/marketing-agent.js';
 import { DevOpsAgent } from './agents/devops-agent.js';
 import { QAAgent } from './agents/qa-agent.js';
 import { CompetitorAgent } from './agents/competitor-agent.js';
+import { ModelRouter } from './router/model-router.js';
 import { startDashboard } from '../dashboard/server.js';
 
 const log = logger.child('main');
@@ -31,14 +32,18 @@ async function main() {
     process.env.TELEGRAM_CHAT_ID
   );
 
+  // Multi-model router (Groq / Claude / OpenAI / etc)
+  const router = new ModelRouter();
+  const shared = { telegram: tg, router };
+
   // Instantiate the team
-  const ceo = new CEOAgent({ telegram: tg });
-  const dev = new DeveloperAgent({ telegram: tg });
-  const designer = new DesignerAgent({ telegram: tg });
-  const marketing = new MarketingAgent({ telegram: tg });
-  const devops = new DevOpsAgent({ telegram: tg });
-  const qa = new QAAgent({ telegram: tg });
-  const competitor = new CompetitorAgent({ telegram: tg });
+  const ceo = new CEOAgent(shared);
+  const dev = new DeveloperAgent(shared);
+  const designer = new DesignerAgent(shared);
+  const marketing = new MarketingAgent(shared);
+  const devops = new DevOpsAgent(shared);
+  const qa = new QAAgent(shared);
+  const competitor = new CompetitorAgent(shared);
 
   const team = { ceo, dev, designer, marketing, devops, qa, competitor };
   if (ceo.setTeam) ceo.setTeam(team);

@@ -36,18 +36,59 @@ Always respond in this JSON format:
 }`;
   }
 
+  setTeam(team) { this.team = team; }
+
+  // Override run() to handle CEO-specific actions
+  async run(input = {}) {
+    if (typeof input === 'string') return this.handleRequest(input);
+    const { action, instruction, task } = input;
+    if (action === 'daily_report') return this.dailyReport();
+    const msg = instruction || task;
+    if (msg) return this.handleRequest(msg);
+    return { summary: 'CEO ready. Send an instruction or /report.' };
+  }
+
+  async dailyReport() {
+    const teamSize = this.team ? Object.keys(this.team).length : 0;
+    const activeProjects = Array.from(this.projects.values()).filter(p => p.status === 'running').length;
+    const completedToday = Array.from(this.projects.values()).filter(p => {
+      const d = new Date(p.startedAt); const now = new Date();
+      return p.status === 'completed' && d.toDateString() === now.toDateString();
+    }).length;
+
+    let aiSummary = '';
+    if (this.router) {
+      try {
+        aiSummary = await this.think({
+          task: `Give a brief 3-sentence daily status for CardXC fintech. Team: ${teamSize} agents, ${activeProjects} running, ${completedToday} completed today. Be direct, actionable.`
+        });
+      } catch (e) { aiSummary = `(AI unavailable: ${e.message})`; }
+    } else {
+      aiSummary = '(AI router not configured — add GROQ_API_KEY or ANTHROPIC_API_KEY to .env)';
+    }
+
+    const summary = `📊 *Daily Report*\nTeam: ${teamSize} agents\nActive: ${activeProjects}\nDone today: ${completedToday}\n\n${aiSummary}`;
+    await this.report(summary);
+    return { summary, teamSize, activeProjects, completedToday };
+  }
+
   async handleRequest(userMessage) {
     const projectId = `p_${Date.now()}`;
     logger.info(`🎯 CEO received: "${userMessage.slice(0, 100)}..."`);
 
     await this.report(`Got it. Planning: _${userMessage.slice(0, 100)}_`);
 
+    if (!this.router) {
+      await this.report(`⚠️ AI router not configured. Add GROQ_API_KEY or ANTHROPIC_API_KEY to .env and restart.`);
+      return { summary: 'AI router missing' };
+    }
+
     let plan;
     try {
       plan = await this.thinkJSON({ task: userMessage, taskType: 'brain' });
     } catch (e) {
       await this.report(`⚠️ Planning failed: ${e.message}`);
-      return;
+      return { summary: `Planning failed: ${e.message}` };
     }
 
     this.projects.set(projectId, {

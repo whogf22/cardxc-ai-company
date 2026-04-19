@@ -58,7 +58,7 @@ jobs:
           script: |
             set -eux
             APP_DIR="${{ secrets.APP_DIR }}"
-            [ -z "$APP_DIR" ] && APP_DIR="/var/www/cardxc-ai-company"
+            if [ -z "$APP_DIR" ]; then APP_DIR="/var/www/cardxc-ai-company"; fi
             if [ ! -d "$APP_DIR" ]; then
               echo "⚠️  $APP_DIR missing — run install.sh on VPS first"
               exit 1

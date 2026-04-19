@@ -2,6 +2,9 @@
 
 > Autonomous AI team running **cardxc.online**, **getotps.com**, **writtingexpert.com** 24/7.
 
+**Repo:** https://github.com/whogf22/cardxc-ai-company (private)
+**Auto-deploy:** Push to `main` → GitHub Actions + VPS webhook → pm2 restart in ~15s
+
 An always-on multi-agent system that codes, designs, markets, deploys, monitors competitors, and reports to you via Telegram. CEO-led, 7 specialist agents, 37-specialist visual workflow.
 
 ---
@@ -59,14 +62,34 @@ Telegram ⇄ CEO Agent ──→ [ dev | designer | marketing | devops | qa | co
 
 ---
 
+## Auto-Deploy Flow
+
+```
+  local edit
+     │
+     ▼
+  git push origin main
+     │
+     ├──► GitHub Actions (deploy.yml)
+     │       └─ SSH to VPS → pull → npm install → pm2 restart → Telegram notify
+     │
+     └──► VPS webhook listener (port 3002)
+             └─ verify HMAC → pull → npm install → pm2 restart → Telegram notify
+```
+
+Either path works — webhook is the primary (instant), Actions is the backup.
+
 ## Install (VPS)
 
 ```bash
-# 1. Upload / clone
-scp cardxc-ai-company-v1.tar.gz user@vps:/home/user/
+# 1. Clone (recommended — enables auto-deploy)
 ssh user@vps
-tar -xzf cardxc-ai-company-v1.tar.gz
+git clone https://github.com/whogf22/cardxc-ai-company.git
 cd cardxc-ai-company
+
+# OR upload the tarball (no auto-deploy)
+# scp cardxc-ai-company-v1.tar.gz user@vps:/home/user/
+# tar -xzf cardxc-ai-company-v1.tar.gz && cd cardxc-ai-company
 
 # 2. Configure
 cp .env.example .env
